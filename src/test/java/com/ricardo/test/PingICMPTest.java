@@ -2,6 +2,7 @@ package com.ricardo.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,11 +19,8 @@ public class PingICMPTest {
 	}
 	
 	@Test
-	public void shouldPingIcmp() {
-		assertThat(icmpPing.icmpPing()).isNotEmpty();
+	public void shouldPingIcmp() throws IOException {
+		assertThat(icmpPing.icmpPing("uol.com.br")).isNotEmpty();
 	}
-	
-	
-	
 	
 }

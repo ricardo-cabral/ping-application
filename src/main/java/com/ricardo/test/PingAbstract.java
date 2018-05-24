@@ -67,7 +67,7 @@ public abstract class PingAbstract {
 				// Picks up Windows and Unix unreachable hosts
 				//if (outputLine.toLowerCase().contains("destination host unreachable")) {
 					//return false;
-				System.out.println(outputLine);
+				//System.out.println(outputLine);
 				}
 			}
 		

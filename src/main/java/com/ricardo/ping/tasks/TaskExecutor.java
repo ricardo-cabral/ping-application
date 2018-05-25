@@ -1,5 +1,6 @@
 package com.ricardo.ping.tasks;
 
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -11,12 +12,12 @@ import java.util.logging.Logger;
 
 public class TaskExecutor {
 
-	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
-	private PingTask task;
+	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+	private Set<PingTask> tasks;
 	private String lastResult = null;
 
-	public TaskExecutor(PingTask task) {
-		this.task = task;
+	public TaskExecutor(Set<PingTask> tasks) {
+		this.tasks = tasks;
 	}
 	
 /*	 private Callable<String> executeTask() {
@@ -25,16 +26,25 @@ public class TaskExecutor {
 	    };
 	}*/
 	
-	 private Runnable executeTask() {
+	 private Runnable executeTask(PingTask task) {
 		    return () -> {
-		        lastResult = task.execute();
-		        System.out.println("lastResult: " + lastResult);
+		    	/*try {
+					TimeUnit.SECONDS.sleep(2);*/
+					lastResult = task.execute();
+			        System.out.println("lastResult: " + lastResult);
+				/*} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+		        
 		    };
 		}
 
-	public String beginExecution(long delay) {
+	public String beginExecution(long period, long delay) {
+		for (PingTask pingTask : tasks) {
+			executorService.scheduleAtFixedRate(executeTask(pingTask), period, delay, TimeUnit.SECONDS);	
+		}
 		
-		executorService.scheduleAtFixedRate(executeTask(), 5, delay, TimeUnit.SECONDS);
 		String result = null;
 		
 		/*try {

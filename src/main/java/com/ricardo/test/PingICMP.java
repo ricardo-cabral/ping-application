@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import com.ricardo.ping.tasks.PingTask;
 import com.ricardo.ping.tasks.TaskExecutor;
@@ -21,11 +23,19 @@ public class PingICMP extends PingAbstract implements PingTask{
 	}
 
 	public static void main(String[] args) throws IOException {
-		PingICMP ping = new PingICMP("jasmin.com");
+		PingICMP ping = new PingICMP("uol.com.br");
+		PingICMP ping2 = new PingICMP("globo.com.br");
 		
-		TaskExecutor executor = new TaskExecutor(ping);
-		executor.beginExecution(5);
+		Set<PingTask> tasks = new HashSet<>();
+		tasks.add(ping);
+		tasks.add(ping2);
+		TaskExecutor executor = new TaskExecutor(tasks);
+		executor.beginExecution(1, 2);
 		
+		
+		/*TaskExecutor executor2 = new TaskExecutor(ping2);
+		executor.beginExecution(1, 2);
+		*/
 	}
 
 	@Override

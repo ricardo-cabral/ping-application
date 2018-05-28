@@ -27,7 +27,7 @@ public class AppServer {
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 		context.setContextPath("/");
 		
-		Server jettyServer = new Server(8080);
+		Server jettyServer = new Server(8090);
 		jettyServer.setHandler(context);
 		
 		ServletHolder servlet = context.addServlet(ServletContainer.class, "/*");
@@ -50,17 +50,20 @@ public class AppServer {
 	
 	private static void setupTasks() throws IOException {
 		Properties properties = SystemHelper.loadProperties();
-		
-		PingICMP ping = new PingICMP("jasmin.com");
-		PingICMP ping2 = new PingICMP("oranum.com");
+		PingICMP ping = new PingICMP("uol.com.br");
+		//PingICMP ping2 = new PingICMP("globo.com.br");
+		//PingICMP ping3 = new PingICMP("www.google.com");
+		PingICMP ping4 = new PingICMP("asdfg.lu");
 		
 		Set<PingTask> tasks = new HashSet<>();
 		tasks.add(ping);
-		tasks.add(ping2);
+		//tasks.add(ping2);
+		//tasks.add(ping3);
+		tasks.add(ping4);
 		LOG.info("Scheduling ping tasks for " + tasks.toString());
 		
 		TaskExecutor executor = new TaskExecutor(tasks);
-		executor.beginExecution(5, 2);
+		executor.beginExecution(15, 2);
 		LOG.info("Scheduling ping tasks done");
 		
 		/*TaskExecutor executor2 = new TaskExecutor(ping2);

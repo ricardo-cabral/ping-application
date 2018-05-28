@@ -25,10 +25,12 @@ public class PingICMP extends PingAbstract implements PingTask{
 	public static void main(String[] args) throws IOException {
 		PingICMP ping = new PingICMP("uol.com.br");
 		PingICMP ping2 = new PingICMP("globo.com.br");
+		PingICMP ping3 = new PingICMP("www.google.com");
 		
 		Set<PingTask> tasks = new HashSet<>();
 		tasks.add(ping);
 		tasks.add(ping2);
+		tasks.add(ping3);
 		TaskExecutor executor = new TaskExecutor(tasks);
 		executor.beginExecution(1, 2);
 		

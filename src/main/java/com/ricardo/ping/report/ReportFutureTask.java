@@ -13,7 +13,7 @@ import com.ricardo.ping.web.ReportGenerator;
 
 public class ReportFutureTask  {
 
-	 private ExecutorService executor = Executors.newFixedThreadPool(2);
+	 private ExecutorService executor = Executors.newFixedThreadPool(1);
 	
 	
 	public Future<Response> callReportController(Report report) throws Exception {

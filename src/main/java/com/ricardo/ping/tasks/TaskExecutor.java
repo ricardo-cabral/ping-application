@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class TaskExecutor {
 
-	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	private Set<PingTask> tasks;
 	private String lastResult = null;
 

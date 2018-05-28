@@ -13,10 +13,10 @@ public class Report {
 
 	//@XmlElement  
 	private String host;
-	@JsonbProperty("icmp_ping")
+	//@JsonbProperty("icmp_ping")
 	//@XmlElement  
 	private String icmpPing;
-	@JsonbProperty("tcp_ping")
+	//@JsonbProperty("tcp_ping")
 	//@XmlElement  
 	private String tcpPing;
 	//@XmlElement  

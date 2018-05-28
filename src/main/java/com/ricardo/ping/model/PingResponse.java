@@ -10,7 +10,10 @@ public class PingResponse {
 	private String dataBytes;
 	private LocalDateTime pingDateAndTime;
 	private List<String> linesResult;
+	private int httpStatusCode;
+	private long responseTimeInMillis;
 
+	
 	public String getUrl() {
 		return url;
 	}
@@ -49,6 +52,22 @@ public class PingResponse {
 
 	public void setLinesResult(List<String> linesResult) {
 		this.linesResult = linesResult;
+	}
+
+	public long getResponseTimeInMillis() {
+		return responseTimeInMillis;
+	}
+
+	public int getHttpStatusCode() {
+		return httpStatusCode;
+	}
+
+	public void setHttpStatusCode(int httpStatusCode) {
+		this.httpStatusCode = httpStatusCode;
+	}
+
+	public void setResponseTimeInMillis(long responseTimeInMillis) {
+		this.responseTimeInMillis = responseTimeInMillis;
 	}
 
 	public String toString() {

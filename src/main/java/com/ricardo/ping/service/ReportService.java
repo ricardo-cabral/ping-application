@@ -1,6 +1,7 @@
 package com.ricardo.ping.service;
 
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -18,8 +19,10 @@ import javax.ws.rs.core.Response;
 
 import org.eclipse.jetty.http.HttpStatus;
 
+import com.ricardo.ping.model.PingResponse;
 import com.ricardo.ping.report.Report;
 import com.ricardo.ping.report.ReportMemoryDao;
+import com.ricardo.test.PingAbstract;
 
 @Path("/report")
 public class ReportService {
@@ -56,5 +59,22 @@ public class ReportService {
 		Jsonb jsonb = JsonbBuilder.create();
 		Report report = jsonb.fromJson(json, Report.class);
 		return Response.status(HttpStatus.OK_200).entity(dao.create(report.getHost(), report)).build();
+	}
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public String listLastHostResults() {
+		Jsonb jsonb = JsonbBuilder.create();
+		return jsonb.toJson(PingAbstract.getLastPingResultsByHost());
+	}
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/errors")
+	public String listErrors() {
+		dao = ReportMemoryDao.INSTANCE;
+		Jsonb jsonb = JsonbBuilder.create();
+		
+		return jsonb.toJson(dao.listReports());
 	}
 }

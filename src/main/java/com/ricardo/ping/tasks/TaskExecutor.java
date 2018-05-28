@@ -19,43 +19,43 @@ public class TaskExecutor {
 	public TaskExecutor(Set<PingTask> tasks) {
 		this.tasks = tasks;
 	}
-	
-/*	 private Callable<String> executeTask() {
-	    return () -> {
-	        return task.execute();
-	    };
-	}*/
-	
-	 private Runnable executeTask(PingTask task) {
-		    return () -> {
-		    	/*try {
-					TimeUnit.SECONDS.sleep(2);*/
-					lastResult = task.execute();
-			        System.out.println("lastResult: " + lastResult);
-				/*} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}*/
-		        
-		    };
-		}
+
+	/*
+	 * private Callable<String> executeTask() { return () -> { return
+	 * task.execute(); }; }
+	 */
+
+	private Runnable executeTask(PingTask task) {
+		return () -> {
+			/*
+			 * try { TimeUnit.SECONDS.sleep(2);
+			 */
+			lastResult = task.execute();
+			//this.formatResponse(lastResult);
+			//System.out.println("lastResult: " + lastResult);
+			/*
+			 * } catch (InterruptedException e) { // TODO Auto-generated catch block
+			 * e.printStackTrace(); }
+			 */
+
+		};
+	}
 
 	public String beginExecution(long period, long delay) {
 		for (PingTask pingTask : tasks) {
-			executorService.scheduleAtFixedRate(executeTask(pingTask), period, delay, TimeUnit.SECONDS);	
+			executorService.scheduleAtFixedRate(executeTask(pingTask), period, delay, TimeUnit.SECONDS);
 		}
-		
+
 		String result = null;
-		
-		/*try {
-		    result = executed.get();
-		} catch (InterruptedException | ExecutionException e) {
-		    e.printStackTrace();
-		}*/
-		
+
+		/*
+		 * try { result = executed.get(); } catch (InterruptedException |
+		 * ExecutionException e) { e.printStackTrace(); }
+		 */
+
 		return result;
 	}
-	
+
 	public void stop() {
 		executorService.shutdown();
 		try {
@@ -64,8 +64,10 @@ public class TaskExecutor {
 			Logger.getLogger(TaskExecutor.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
+
+
 	public static void main(String[] args) {
-		
+
 	}
 }

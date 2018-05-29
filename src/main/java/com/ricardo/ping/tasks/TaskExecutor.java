@@ -37,10 +37,4 @@ public class TaskExecutor {
 			Logger.getLogger(TaskExecutor.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-
-
-
-	public static void main(String[] args) {
-
-	}
 }

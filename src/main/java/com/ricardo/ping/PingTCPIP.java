@@ -1,4 +1,4 @@
-package com.ricardo.test;
+package com.ricardo.ping;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ws.rs.core.Response;
 
@@ -20,6 +22,8 @@ import com.ricardo.ping.report.ReportFutureTask;
 import com.ricardo.ping.tasks.ProcessTask;
 
 public class PingTCPIP extends ProcessAbstract implements ProcessTask {
+
+	private static Logger LOG = Logger.getLogger(PingICMP.class.getName());
 
 	private String url;
 	private int timeout;
@@ -56,7 +60,8 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 					buffer.append(outputLine);
 					results.add(outputLine);
 					
-					System.out.println("Output: " + outputLine);
+					LOG.log(Level.FINE, outputLine);
+
 				}
 			}
 			
@@ -70,6 +75,7 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 			setPingResponse();
 			this.callReport(url, results);
 		} catch (IOException e) {
+			LOG.log(Level.SEVERE, "error pinging tcp ip for: " + url);
 			callReport(url, Arrays.asList(e.getMessage()));
 		}
 		
@@ -90,18 +96,15 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 		try {
 			Future<Response> future = task.callReportController(report);
 			Response resultPostCall = future.get();
-
-			System.out.println("response future result: " + resultPostCall);
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, "error calling report", e);
 		}
 
 	}
 	
 
 	private void setPingResponse() {
-		try {
-			
 			PingResponse response = new PingResponse();
 			
 			response.setUrl(url);
@@ -111,10 +114,6 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 			
 			lastPingResultsByHost.compute(response.getUrl(), (key, value) -> response);
 
-			System.out.println("Last Ping result tcp ip: " + lastPingResultsByHost.get(response.getUrl()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 	
 	

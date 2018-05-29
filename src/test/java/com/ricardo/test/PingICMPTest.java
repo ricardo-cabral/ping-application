@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.ricardo.ping.PingICMP;
+
 
 
 public class PingICMPTest {

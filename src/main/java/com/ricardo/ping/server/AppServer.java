@@ -1,5 +1,6 @@
 package com.ricardo.ping.server;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,27 +8,34 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import com.ricardo.ping.PingICMP;
+import com.ricardo.ping.PingTCPIP;
+import com.ricardo.ping.Traceroute;
 import com.ricardo.ping.service.ReportService;
 import com.ricardo.ping.tasks.ProcessTask;
 import com.ricardo.ping.tasks.TaskExecutor;
 import com.ricardo.ping.util.SystemHelper;
-import com.ricardo.test.PingICMP;
-import com.ricardo.test.PingTCPIP;
-import com.ricardo.test.Traceroute;
 
 public class AppServer {
 
-	private static Logger LOG = Logger.getLogger(AppServer.class.getName());
+	private static final Logger logger = Logger.getLogger(AppServer.class.getName());
 	private static int threadPool;
 	private static List<String> hosts;
+	
+
+    
 	public static void main(String[] args) throws Exception {
+	
 		
 		if(args.length > 0) {
 			hosts = new ArrayList<>(args.length);
@@ -79,46 +87,12 @@ public class AppServer {
 				setupTasks(tasks, host);
 			}
 		}
-		/*PingICMP ping = new PingICMP("uol.com.br");
-		PingICMP ping2 = new PingICMP("www.globo.com.br");
-		PingICMP ping3 = new PingICMP("http://www.google.com");
-		PingICMP ping4 = new PingICMP("asdfg.lu");
-		PingICMP ping5 = new PingICMP("jasmin.com");
-		PingICMP ping6 = new PingICMP("oranum.com");
-		
-		PingTCPIP ping7 = new PingTCPIP("uol.com.br", 300);
-		PingTCPIP ping8 = new PingTCPIP("http://www.globo.com.br", 100);
-		PingTCPIP ping9 = new PingTCPIP("http://www.google.com", 500);
-		PingTCPIP ping10 = new PingTCPIP("asdfg.lu", 100);
-		PingTCPIP ping11 = new PingTCPIP("http://www.jasmin.com", 100);
-		PingTCPIP ping12 = new PingTCPIP("http://www.oranum.com", 300);
-		 
-		Traceroute tracert = new Traceroute("http://www.google.com");
-		Traceroute tracert2 = new Traceroute("www.globo.com");
-		//localhost:8090/report/
-		//localhost:8090/report/errors
-		
-		tasks.add(ping);
-		tasks.add(ping2);
-		tasks.add(ping3);
-		tasks.add(ping4);
-		tasks.add(ping5);
-		tasks.add(ping6);
-		
-		tasks.add(ping7);
-		tasks.add(ping8);
-		tasks.add(ping9);
-		tasks.add(ping10);
-		tasks.add(ping11);
-		tasks.add(ping12);
-		
-		tasks.add(tracert);
-		tasks.add(tracert2);*/
-		LOG.info("Scheduling ping tasks for " + Arrays.toString(tasks.toArray()));
+	
+		logger.info("Scheduling ping tasks for " + Arrays.toString(tasks.toArray()));
 		
 		TaskExecutor executor = new TaskExecutor(tasks);
 		executor.beginExecution(period, delay);
-		LOG.info("Scheduling ping tasks done");
+		logger.info("Scheduling ping tasks done");
 
 	}
 

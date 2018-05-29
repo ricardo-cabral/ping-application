@@ -1,4 +1,4 @@
-package com.ricardo.test;
+package com.ricardo.ping;
 
 import java.io.IOException;
 import java.net.URI;

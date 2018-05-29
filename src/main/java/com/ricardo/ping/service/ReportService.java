@@ -1,11 +1,8 @@
 package com.ricardo.ping.service;
 
-
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.ws.rs.Consumes;
@@ -19,24 +16,15 @@ import javax.ws.rs.core.Response;
 
 import org.eclipse.jetty.http.HttpStatus;
 
+import com.ricardo.ping.ProcessAbstract;
 import com.ricardo.ping.report.Report;
 import com.ricardo.ping.report.ReportMemoryDao;
+import com.ricardo.ping.tasks.TaskExecutor;
 import com.ricardo.ping.util.SystemHelper;
-import com.ricardo.test.ProcessAbstract;
 
 @Path("/report")
 public class ReportService {
 
-	/*
-	 * 
-	 * localhost:8080/report/globo.com
-	 * {
-    "  host":"globo.com", 
-    "  icmp_ping":"result lines of the last icmp ping command", 
-    "  tcp_ping":"result lines of the last tcp ping command", 
-    "  trace":"result lines of the last trace command"
-   }
-	 */
 	private static Logger LOG = Logger.getLogger(ReportService.class.getName());
 	private ReportMemoryDao dao = ReportMemoryDao.INSTANCE;
 
@@ -44,7 +32,7 @@ public class ReportService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("{host}")
 	public String getReport(@PathParam("host") String host) {
-		//LOG.info(host);
+		LOG.log(Level.FINE, host);
 		Jsonb jsonb = JsonbBuilder.create();
 		return jsonb.toJson(dao.get(host));
 	}
@@ -52,7 +40,7 @@ public class ReportService {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
     public Response saveReport(String json) {
-		//LOG.info(json);
+		LOG.log(Level.FINE, json);
 		Jsonb jsonb = JsonbBuilder.create();
 		Report report = jsonb.fromJson(json, Report.class);
 		

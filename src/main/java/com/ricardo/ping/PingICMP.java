@@ -1,4 +1,4 @@
-package com.ricardo.test;
+package com.ricardo.ping;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.core.Response;
@@ -22,32 +23,32 @@ import com.ricardo.ping.tasks.ProcessTask;
 import com.ricardo.ping.util.OperationalSystem;
 import com.ricardo.ping.util.SystemHelper;
 
-public class Traceroute extends ProcessAbstract implements ProcessTask{
+public class PingICMP extends ProcessAbstract implements ProcessTask {
 
-	private static Logger LOG = Logger.getLogger(Traceroute.class.getName());
-	
-	private final String url;
-	
-	public Traceroute(String url) {
+	private static Logger LOG = Logger.getLogger(PingICMP.class.getName());
+	private String url;
+
+	public PingICMP(String url) {
 		this.url = url;
 	}
+
 	@Override
 	public String execute() {
 		String result = null;
 		try {
-			result = executeTracert(url);
+			result = executePing(url);
 		} catch (IOException | InterruptedException | URISyntaxException e) {
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
-	
-	public String executeTracert(String url) throws IOException, InterruptedException, URISyntaxException {
+
+	public String executePing(String url) throws IOException, InterruptedException, URISyntaxException {
 		List<String> result = new ArrayList<>();
 		List<String> command = buildCommand(url);
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
-		StringBuffer builder = new StringBuffer();
+		StringBuffer buffer = new StringBuffer();
 		Process process = processBuilder.start();
 		synchronized (this) {
 
@@ -55,12 +56,12 @@ public class Traceroute extends ProcessAbstract implements ProcessTask{
 				String outputLine;
 
 				while ((outputLine = standardOutput.readLine()) != null) {
-					builder.append(outputLine);
+					buffer.append(outputLine);
 
 					if (outputLine.length() > 0) {
 						result.add(outputLine);
 					}
-					System.out.println("Output: " + outputLine);
+					LOG.log(Level.FINE, outputLine);
 				}
 			}
 
@@ -68,100 +69,58 @@ public class Traceroute extends ProcessAbstract implements ProcessTask{
 				String outputLine;
 
 				while ((outputLine = standardOutput.readLine()) != null) {
-					builder.append(outputLine);
+					buffer.append(outputLine);
 
 					if (outputLine.length() > 0) {
 						result.add(outputLine);
 					}
-					
-					System.out.println("Output: " + outputLine);
-					
+
+					LOG.log(Level.FINE, outputLine);
 				}
 			}
 
 			process.waitFor();
-			LOG.info("Process exit value: " + process.exitValue());
+			LOG.log(Level.FINE, "Process exit value: " + process.exitValue());
 			if (process.exitValue() != 0) {
-				LOG.warning("Error tracert!!!");
+				LOG.log(Level.SEVERE, " Error pinging website:  " + url);
 				this.callReport(url, result);
 			} else {
-				System.out.println("IP: " + url);
 				this.callReport(url, result);
 				this.formatResponse(url, result);
 			}
 		}
 
-		return builder.toString();
-
-	}
-	
-	protected void callReport(String url, List<String> result) {
-
-		Report report = new Report();
-		report.setHost(url);
-		
-		StringBuilder b = new StringBuilder();
-		result.forEach(b::append);
-		report.setTrace(result.toString());
-
-		ReportFutureTask task = new ReportFutureTask();
-		try {
-			Future<Response> future = task.callReportController(report);
-			Response resultPostCall = future.get();
-
-			System.out.println("response future result: " + resultPostCall);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		return buffer.toString();
 
 	}
 
-	private void formatResponse(String url, List<String> result) {
-		try {
-			PingResponse response = new PingResponse();
-			response.setUrl(url);
-			response.setPingDateAndTime(LocalDateTime.now());
-			
-			List<String> pingResponseLines = new ArrayList<>();
-			for (int i = 1; i < result.size(); i++) {
-				pingResponseLines.add(result.get(i));
-			}
-			response.setLinesResult(pingResponseLines);
-			lastPingResultsByHost.compute(response.getUrl(), (key, value) -> response);
-
-			System.out.println("Last Ping result TRACERT: " + lastPingResultsByHost.get(response.getUrl()));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	@Override
 	protected List<String> buildCommand(String url) throws IOException, URISyntaxException {
 
 		Properties properties = SystemHelper.loadProperties();
 
 		List<String> command = new ArrayList<>();
 
-		String pingCommand = properties.getProperty("tracert.command");
+		String pingCommand = properties.getProperty("ping.command");
 
 		if (pingCommand != null && !pingCommand.equals("")) {
 
 			String[] commands = pingCommand.split(" ");
 			command.addAll(Arrays.asList(commands));
 		} else {
-		
+			command.add("ping");
+
 			OperationalSystem os = SystemHelper.getOS();
 
 			if (os.equals(OperationalSystem.WINDOWS)) {
-				command.add("tracert ");
+				command.add("-n");
 			} else if (os.equals(OperationalSystem.MAC) || os.equals(OperationalSystem.LINUX)) {
-				command.add("traceroute ");
+				command.add("-c");
 
 			} else {
 				throw new UnsupportedOperationException("Unsupported operating system");
 			}
-			
+
+			command.add("1");
 		}
 
 		URI uri = new URI(url);
@@ -170,5 +129,39 @@ public class Traceroute extends ProcessAbstract implements ProcessTask{
 
 		return command;
 	}
+	
+	@Override
+	protected void callReport(String url, List<String> result) {
 
+		Report report = new Report();
+		report.setHost(url);
+		
+		StringBuilder b = new StringBuilder();
+		result.forEach(b::append);
+		report.setIcmpPing(b.toString());
+		
+		ReportFutureTask task = new ReportFutureTask();
+		try {
+			Future<Response> future = task.callReportController(report);
+			Response resultPostCall = future.get();
+			LOG.log(Level.FINE, "response future result: " + resultPostCall);
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, " Error calling report website:  ", e);
+		}
+
+	}
+
+	private void formatResponse(String url, List<String> result) {
+			PingResponse response = new PingResponse();
+			
+			response.setUrl(url);
+			response.setPingDateAndTime(LocalDateTime.now());
+
+			List<String> pingResponseLines = new ArrayList<>();
+			for (int i = 1; i < result.size(); i++) {
+				pingResponseLines.add(result.get(i));
+			}
+			response.setLinesResult(pingResponseLines);
+			lastPingResultsByHost.compute(response.getUrl(), (key, value) -> response);
+	}
 }

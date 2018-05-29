@@ -17,9 +17,9 @@ import javax.ws.rs.core.Response;
 import com.ricardo.ping.model.PingResponse;
 import com.ricardo.ping.report.Report;
 import com.ricardo.ping.report.ReportFutureTask;
-import com.ricardo.ping.tasks.PingTask;
+import com.ricardo.ping.tasks.ProcessTask;
 
-public class PingTCPIP extends PingAbstract implements PingTask {
+public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 
 	private String url;
 	private int timeout;
@@ -38,8 +38,9 @@ public class PingTCPIP extends PingAbstract implements PingTask {
 	}
 
 	public String pingURL(String url, int timeout) {
-		url = url.replaceFirst("^https", "http");
-		StringBuffer builder = new StringBuffer();
+		StringBuffer buffer = new StringBuffer();
+		List<String> results = new ArrayList<>();
+		
 		try {
 
 			Long startTime = Instant.now().toEpochMilli();
@@ -52,23 +53,27 @@ public class PingTCPIP extends PingAbstract implements PingTask {
 				String outputLine;
 
 				while ((outputLine = standardOutput.readLine()) != null) {
-					builder.append(outputLine);
-
+					buffer.append(outputLine);
+					results.add(outputLine);
 					
 					System.out.println("Output: " + outputLine);
 				}
 			}
 			
 			httpStatusCode = connection.getResponseCode();
+			
 			Long endTime = Instant.now().toEpochMilli();
 			responseTimeInMillis = endTime - startTime;
+			results.add(" HTTP Status code: " + httpStatusCode);
+			results.add(" Response in Milliseconds: " + responseTimeInMillis);
 			
 			setPingResponse();
+			this.callReport(url, results);
 		} catch (IOException e) {
 			callReport(url, Arrays.asList(e.getMessage()));
 		}
 		
-		return builder.toString();
+		return buffer.toString();
 	}
 
 	@Override
@@ -76,7 +81,10 @@ public class PingTCPIP extends PingAbstract implements PingTask {
 
 		Report report = new Report();
 		report.setHost(url);
-		report.setTcpPing(result.toString());
+		
+		StringBuilder b = new StringBuilder();
+		result.forEach(b::append);
+		report.setTcpPing(b.toString());
 
 		ReportFutureTask task = new ReportFutureTask();
 		try {
@@ -85,7 +93,6 @@ public class PingTCPIP extends PingAbstract implements PingTask {
 
 			System.out.println("response future result: " + resultPostCall);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -98,12 +105,13 @@ public class PingTCPIP extends PingAbstract implements PingTask {
 			PingResponse response = new PingResponse();
 			
 			response.setUrl(url);
+			response.setPingDateAndTime(LocalDateTime.now());
 			response.setResponseTimeInMillis(responseTimeInMillis);
 			response.setHttpStatusCode(httpStatusCode);
 			
 			lastPingResultsByHost.compute(response.getUrl(), (key, value) -> response);
 
-			System.out.println("Last Ping result: " + lastPingResultsByHost.get(response.getUrl()));
+			System.out.println("Last Ping result tcp ip: " + lastPingResultsByHost.get(response.getUrl()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

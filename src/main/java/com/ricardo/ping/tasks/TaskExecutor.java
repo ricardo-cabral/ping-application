@@ -1,59 +1,32 @@
 package com.ricardo.ping.tasks;
 
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.ricardo.ping.server.AppServer;
+
 public class TaskExecutor {
 
-	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
-	private Set<PingTask> tasks;
+	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(AppServer.getThreadPool());
+	private Set<ProcessTask> tasks;
 	private String lastResult = null;
 
-	public TaskExecutor(Set<PingTask> tasks) {
+	public TaskExecutor(Set<ProcessTask> tasks) {
 		this.tasks = tasks;
 	}
 
-	/*
-	 * private Callable<String> executeTask() { return () -> { return
-	 * task.execute(); }; }
-	 */
-
-	private Runnable executeTask(PingTask task) {
-		return () -> {
-			/*
-			 * try { TimeUnit.SECONDS.sleep(2);
-			 */
-			lastResult = task.execute();
-			//this.formatResponse(lastResult);
-			//System.out.println("lastResult: " + lastResult);
-			/*
-			 * } catch (InterruptedException e) { // TODO Auto-generated catch block
-			 * e.printStackTrace(); }
-			 */
-
-		};
+	private Runnable executeTask(ProcessTask task) {
+		return () -> {lastResult = task.execute();};
 	}
 
-	public String beginExecution(long period, long delay) {
-		for (PingTask pingTask : tasks) {
+	public void beginExecution(long period, long delay) {
+		for (ProcessTask pingTask : tasks) {
 			executorService.scheduleAtFixedRate(executeTask(pingTask), period, delay, TimeUnit.SECONDS);
 		}
-
-		String result = null;
-
-		/*
-		 * try { result = executed.get(); } catch (InterruptedException |
-		 * ExecutionException e) { e.printStackTrace(); }
-		 */
-
-		return result;
 	}
 
 	public void stop() {

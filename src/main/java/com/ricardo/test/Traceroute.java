@@ -22,32 +22,32 @@ import com.ricardo.ping.tasks.ProcessTask;
 import com.ricardo.ping.util.OperationalSystem;
 import com.ricardo.ping.util.SystemHelper;
 
-public class PingICMP extends ProcessAbstract implements ProcessTask {
+public class Traceroute extends ProcessAbstract implements ProcessTask{
 
-	private static Logger LOG = Logger.getLogger(PingICMP.class.getName());
-	private String url;
-
-	public PingICMP(String url) {
+	private static Logger LOG = Logger.getLogger(Traceroute.class.getName());
+	
+	private final String url;
+	
+	public Traceroute(String url) {
 		this.url = url;
 	}
-
 	@Override
 	public String execute() {
 		String result = null;
 		try {
-			result = executePing(url);
+			result = executeTracert(url);
 		} catch (IOException | InterruptedException | URISyntaxException e) {
 			e.printStackTrace();
 		}
-
+		
 		return result;
 	}
-
-	public String executePing(String url) throws IOException, InterruptedException, URISyntaxException {
+	
+	public String executeTracert(String url) throws IOException, InterruptedException, URISyntaxException {
 		List<String> result = new ArrayList<>();
 		List<String> command = buildCommand(url);
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
-		StringBuffer buffer = new StringBuffer();
+		StringBuffer builder = new StringBuffer();
 		Process process = processBuilder.start();
 		synchronized (this) {
 
@@ -55,7 +55,7 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 				String outputLine;
 
 				while ((outputLine = standardOutput.readLine()) != null) {
-					buffer.append(outputLine);
+					builder.append(outputLine);
 
 					if (outputLine.length() > 0) {
 						result.add(outputLine);
@@ -68,20 +68,21 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 				String outputLine;
 
 				while ((outputLine = standardOutput.readLine()) != null) {
-					buffer.append(outputLine);
+					builder.append(outputLine);
 
 					if (outputLine.length() > 0) {
 						result.add(outputLine);
 					}
-
+					
 					System.out.println("Output: " + outputLine);
+					
 				}
 			}
 
 			process.waitFor();
 			LOG.info("Process exit value: " + process.exitValue());
 			if (process.exitValue() != 0) {
-				LOG.warning("Error pinging website!!!");
+				LOG.warning("Error tracert!!!");
 				this.callReport(url, result);
 			} else {
 				System.out.println("IP: " + url);
@@ -90,47 +91,10 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 			}
 		}
 
-		return buffer.toString();
+		return builder.toString();
 
-	}
-
-	protected List<String> buildCommand(String url) throws IOException, URISyntaxException {
-
-		Properties properties = SystemHelper.loadProperties();
-
-		List<String> command = new ArrayList<>();
-
-		String pingCommand = properties.getProperty("ping.command");
-
-		if (pingCommand != null && !pingCommand.equals("")) {
-
-			String[] commands = pingCommand.split(" ");
-			command.addAll(Arrays.asList(commands));
-		} else {
-			command.add("ping");
-
-			OperationalSystem os = SystemHelper.getOS();
-
-			if (os.equals(OperationalSystem.WINDOWS)) {
-				command.add("-n");
-			} else if (os.equals(OperationalSystem.MAC) || os.equals(OperationalSystem.LINUX)) {
-				command.add("-c");
-
-			} else {
-				throw new UnsupportedOperationException("Unsupported operating system");
-			}
-
-			command.add("1");
-		}
-
-		URI uri = new URI(url);
-		String finalAddress =  uri.getHost() != null ?  uri.getHost() : url;
-		command.add(finalAddress);
-
-		return command;
 	}
 	
-	@Override
 	protected void callReport(String url, List<String> result) {
 
 		Report report = new Report();
@@ -138,8 +102,8 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 		
 		StringBuilder b = new StringBuilder();
 		result.forEach(b::append);
-		report.setIcmpPing(b.toString());
-		
+		report.setTrace(result.toString());
+
 		ReportFutureTask task = new ReportFutureTask();
 		try {
 			Future<Response> future = task.callReportController(report);
@@ -155,12 +119,10 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 
 	private void formatResponse(String url, List<String> result) {
 		try {
-
 			PingResponse response = new PingResponse();
-			
 			response.setUrl(url);
 			response.setPingDateAndTime(LocalDateTime.now());
-
+			
 			List<String> pingResponseLines = new ArrayList<>();
 			for (int i = 1; i < result.size(); i++) {
 				pingResponseLines.add(result.get(i));
@@ -168,12 +130,45 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 			response.setLinesResult(pingResponseLines);
 			lastPingResultsByHost.compute(response.getUrl(), (key, value) -> response);
 
-			System.out.println("Last Ping result ICMP: " + lastPingResultsByHost.get(response.getUrl()));
+			System.out.println("Last Ping result TRACERT: " + lastPingResultsByHost.get(response.getUrl()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	@Override
+	protected List<String> buildCommand(String url) throws IOException, URISyntaxException {
 
+		Properties properties = SystemHelper.loadProperties();
 
+		List<String> command = new ArrayList<>();
+
+		String pingCommand = properties.getProperty("tracert.command");
+
+		if (pingCommand != null && !pingCommand.equals("")) {
+
+			String[] commands = pingCommand.split(" ");
+			command.addAll(Arrays.asList(commands));
+		} else {
+		
+			OperationalSystem os = SystemHelper.getOS();
+
+			if (os.equals(OperationalSystem.WINDOWS)) {
+				command.add("tracert ");
+			} else if (os.equals(OperationalSystem.MAC) || os.equals(OperationalSystem.LINUX)) {
+				command.add("traceroute ");
+
+			} else {
+				throw new UnsupportedOperationException("Unsupported operating system");
+			}
+			
+		}
+
+		URI uri = new URI(url);
+		String finalAddress =  uri.getHost() != null ?  uri.getHost() : url;
+		command.add(finalAddress);
+
+		return command;
+	}
 
 }

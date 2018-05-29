@@ -6,8 +6,6 @@ import java.util.List;
 public class PingResponse {
 
 	private String url;
-	private String ip;
-	private String dataBytes;
 	private LocalDateTime pingDateAndTime;
 	private List<String> linesResult;
 	private int httpStatusCode;
@@ -20,22 +18,6 @@ public class PingResponse {
 
 	public void setUrl(String url) {
 		this.url = url;
-	}
-
-	public String getIp() {
-		return ip;
-	}
-
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
-
-	public String getDataBytes() {
-		return dataBytes;
-	}
-
-	public void setDataBytes(String dataBytes) {
-		this.dataBytes = dataBytes;
 	}
 
 	public LocalDateTime getPingDateAndTime() {
@@ -71,6 +53,6 @@ public class PingResponse {
 	}
 
 	public String toString() {
-		return "Website: " + url + " - I.P: " + ip + " - Databytes: " + dataBytes + " Data Time: " + pingDateAndTime;
+		return "URL: " + url + " - responseTimeInMillis: " + responseTimeInMillis + " - httpStatusCode: " + httpStatusCode + " Data Time: " + pingDateAndTime;
 	}
 }

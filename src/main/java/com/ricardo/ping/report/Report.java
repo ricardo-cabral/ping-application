@@ -1,25 +1,18 @@
 package com.ricardo.ping.report;
 
-import javax.json.bind.annotation.JsonbProperty;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
-//@XmlRootElement
-public class Report {
+public class Report implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	/**
 	 * {"host":"the given host", "icmp_ping":"result lines of the last icmp ping command", "tcp_ping":"result lines of
 	 * the last tcp ping command", "trace":"result lines of the last trace command"}
 	 */
 
-	//@XmlElement  
 	private String host;
-	//@JsonbProperty("icmp_ping")
-	//@XmlElement  
 	private String icmpPing;
-	//@JsonbProperty("tcp_ping")
-	//@XmlElement  
 	private String tcpPing;
-	//@XmlElement  
 	private String trace;
 	
 	public Report() {

@@ -1,6 +1,6 @@
 package com.ricardo.ping.tasks;
 
-public interface PingTask {
+public interface ProcessTask {
 
 	public String execute();
 }

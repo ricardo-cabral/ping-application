@@ -130,7 +130,7 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 		return command;
 	}
 	
-	@Override
+/*	@Override
 	protected void callReport(String url, List<String> result) {
 
 		Report report = new Report();
@@ -149,7 +149,7 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 			LOG.log(Level.SEVERE, " Error calling report website:  ", e);
 		}
 
-	}
+	}*/
 
 	private void formatResponse(String url, List<String> result) {
 			PingResponse response = new PingResponse();
@@ -163,5 +163,17 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 			}
 			response.setLinesResult(pingResponseLines);
 			lastPingResultsByHost.compute(response.getUrl(), (key, value) -> response);
+	}
+
+	@Override
+	Report getReport(String url, List<String> result) {
+		Report report = new Report();
+		report.setHost(url);
+		
+		StringBuilder b = new StringBuilder();
+		result.forEach(b::append);
+		report.setIcmpPing(b.toString());
+		
+		return report;
 	}
 }

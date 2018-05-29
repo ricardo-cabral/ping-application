@@ -82,7 +82,7 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 		return buffer.toString();
 	}
 
-	@Override
+/*	@Override
 	protected void callReport(String url, List<String> result) {
 
 		Report report = new Report();
@@ -101,7 +101,7 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 			LOG.log(Level.SEVERE, "error calling report", e);
 		}
 
-	}
+	}*/
 	
 
 	private void setPingResponse() {
@@ -114,6 +114,18 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 			
 			lastPingResultsByHost.compute(response.getUrl(), (key, value) -> response);
 
+	}
+
+	@Override
+	Report getReport(String url, List<String> result) {
+		Report report = new Report();
+		report.setHost(url);
+		
+		StringBuilder b = new StringBuilder();
+		result.forEach(b::append);
+		report.setTcpPing(b.toString());
+		
+		return report;
 	}
 	
 	

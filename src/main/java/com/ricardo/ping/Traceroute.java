@@ -52,34 +52,8 @@ public class Traceroute extends ProcessAbstract implements ProcessTask{
 		Process process = processBuilder.start();
 		synchronized (this) {
 
-			try (BufferedReader standardOutput = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-				String outputLine;
-
-				while ((outputLine = standardOutput.readLine()) != null) {
-					builder.append(outputLine);
-
-					if (outputLine.length() > 0) {
-						result.add(outputLine);
-					}
-					logger.fine(outputLine);
-				}
-			}
-
-			try (BufferedReader standardOutput = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-				String outputLine;
-
-				while ((outputLine = standardOutput.readLine()) != null) {
-					builder.append(outputLine);
-
-					if (outputLine.length() > 0) {
-						result.add(outputLine);
-					}
-					logger.fine(outputLine);
-					
-					
-				}
-			}
-
+			processResult(result, builder, process);
+			errorResult(result, builder, process);
 			process.waitFor();
 			logger.fine("Process exit value: " + process.exitValue());
 			
@@ -95,8 +69,39 @@ public class Traceroute extends ProcessAbstract implements ProcessTask{
 		return builder.toString();
 
 	}
+	private void errorResult(List<String> result, StringBuffer builder, Process process) throws IOException {
+		try (BufferedReader standardOutput = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+			String outputLine;
+
+			while ((outputLine = standardOutput.readLine()) != null) {
+				builder.append(outputLine);
+
+				if (outputLine.length() > 0) {
+					result.add(outputLine);
+				}
+				logger.fine(outputLine);
+				
+				
+			}
+		}
+	}
 	
-	protected void callReport(String url, List<String> result) {
+	private void processResult(List<String> result, StringBuffer builder, Process process) throws IOException {
+		try (BufferedReader standardOutput = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+			String outputLine;
+
+			while ((outputLine = standardOutput.readLine()) != null) {
+				builder.append(outputLine);
+
+				if (outputLine.length() > 0) {
+					result.add(outputLine);
+				}
+				logger.fine(outputLine);
+			}
+		}
+	}
+	
+/*	protected void callReport(String url, List<String> result) {
 
 		Report report = new Report();
 		report.setHost(url);
@@ -115,7 +120,7 @@ public class Traceroute extends ProcessAbstract implements ProcessTask{
 			e.printStackTrace();
 		}
 
-	}
+	}*/
 
 	private void formatResponse(String url, List<String> result) {
 			PingResponse response = new PingResponse();
@@ -162,6 +167,17 @@ public class Traceroute extends ProcessAbstract implements ProcessTask{
 		command.add(finalAddress);
 
 		return command;
+	}
+	
+	@Override
+	Report getReport(String url, List<String> result) {
+		Report report = new Report();
+		report.setHost(url);
+		
+		StringBuilder b = new StringBuilder();
+		result.forEach(b::append);
+		report.setTrace(result.toString());
+		return report;
 	}
 
 }

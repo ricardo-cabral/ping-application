@@ -22,7 +22,7 @@ import com.ricardo.ping.util.SystemHelper;
 
 public class PingICMP extends ProcessAbstract implements ProcessTask {
 
-	private static Logger logger = LogManager.getLogManager().getLogger(PingICMP.class.getName());
+	private static Logger logger = Logger.getLogger(PingICMP.class.getName());
 	private String url;
 
 	public PingICMP(String url) {
@@ -107,7 +107,7 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	private List<String> buildCommand(String url) throws IOException, URISyntaxException {
+	protected List<String> buildCommand(String url) throws IOException, URISyntaxException {
 
 		Properties properties = SystemHelper.loadProperties();
 

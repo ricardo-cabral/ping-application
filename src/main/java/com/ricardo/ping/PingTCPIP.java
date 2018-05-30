@@ -10,15 +10,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ws.rs.core.Response;
-
 import com.ricardo.ping.model.PingResponse;
 import com.ricardo.ping.report.Report;
-import com.ricardo.ping.report.ReportFutureTask;
 import com.ricardo.ping.tasks.ProcessTask;
 
 public class PingTCPIP extends ProcessAbstract implements ProcessTask {
@@ -81,27 +77,6 @@ public class PingTCPIP extends ProcessAbstract implements ProcessTask {
 		
 		return buffer.toString();
 	}
-
-/*	@Override
-	protected void callReport(String url, List<String> result) {
-
-		Report report = new Report();
-		report.setHost(url);
-		
-		StringBuilder b = new StringBuilder();
-		result.forEach(b::append);
-		report.setTcpPing(b.toString());
-
-		ReportFutureTask task = new ReportFutureTask();
-		try {
-			Future<Response> future = task.callReportController(report);
-			Response resultPostCall = future.get();
-			
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, "error calling report", e);
-		}
-
-	}*/
 	
 
 	private void setPingResponse() {

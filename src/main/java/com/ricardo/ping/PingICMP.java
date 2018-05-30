@@ -10,22 +10,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
-import javax.ws.rs.core.Response;
 
 import com.ricardo.ping.model.PingResponse;
 import com.ricardo.ping.report.Report;
-import com.ricardo.ping.report.ReportFutureTask;
 import com.ricardo.ping.tasks.ProcessTask;
 import com.ricardo.ping.util.OperationalSystem;
 import com.ricardo.ping.util.SystemHelper;
 
 public class PingICMP extends ProcessAbstract implements ProcessTask {
 
-	private static Logger LOG = Logger.getLogger(PingICMP.class.getName());
+	private static Logger logger = LogManager.getLogManager().getLogger(PingICMP.class.getName());
 	private String url;
 
 	public PingICMP(String url) {
@@ -38,12 +35,21 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 		try {
 			result = executePing(url);
 		} catch (IOException | InterruptedException | URISyntaxException e) {
+			logger.log(Level.SEVERE,"error  executing PingICM", e);
 			e.printStackTrace();
 		}
 
 		return result;
 	}
 
+	/**
+	 * 
+	 * @param url
+	 * @return a String containing the result of Ping ICMP operation
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws URISyntaxException
+	 */
 	public String executePing(String url) throws IOException, InterruptedException, URISyntaxException {
 		List<String> result = new ArrayList<>();
 		List<String> command = buildCommand(url);
@@ -61,7 +67,7 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 					if (outputLine.length() > 0) {
 						result.add(outputLine);
 					}
-					LOG.log(Level.FINE, outputLine);
+					logger.log(Level.FINE, outputLine);
 				}
 			}
 
@@ -75,14 +81,14 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 						result.add(outputLine);
 					}
 
-					LOG.log(Level.FINE, outputLine);
+					logger.log(Level.FINE, outputLine);
 				}
 			}
 
 			process.waitFor();
-			LOG.log(Level.FINE, "Process exit value: " + process.exitValue());
+			logger.log(Level.FINE, "Process exit value: " + process.exitValue());
 			if (process.exitValue() != 0) {
-				LOG.log(Level.SEVERE, " Error pinging website:  " + url);
+				logger.log(Level.SEVERE, " Error pinging website:  " + url);
 				this.callReport(url, result);
 			} else {
 				this.callReport(url, result);
@@ -94,7 +100,14 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 
 	}
 
-	protected List<String> buildCommand(String url) throws IOException, URISyntaxException {
+	/**
+	 * 
+	 * @param url
+	 * @return  A list of String containing the commands in case it is not specified in application.properties
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	private List<String> buildCommand(String url) throws IOException, URISyntaxException {
 
 		Properties properties = SystemHelper.loadProperties();
 
@@ -129,27 +142,6 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 
 		return command;
 	}
-	
-/*	@Override
-	protected void callReport(String url, List<String> result) {
-
-		Report report = new Report();
-		report.setHost(url);
-		
-		StringBuilder b = new StringBuilder();
-		result.forEach(b::append);
-		report.setIcmpPing(b.toString());
-		
-		ReportFutureTask task = new ReportFutureTask();
-		try {
-			Future<Response> future = task.callReportController(report);
-			Response resultPostCall = future.get();
-			LOG.log(Level.FINE, "response future result: " + resultPostCall);
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, " Error calling report website:  ", e);
-		}
-
-	}*/
 
 	private void formatResponse(String url, List<String> result) {
 			PingResponse response = new PingResponse();
@@ -176,4 +168,6 @@ public class PingICMP extends ProcessAbstract implements ProcessTask {
 		
 		return report;
 	}
+	
+	
 }

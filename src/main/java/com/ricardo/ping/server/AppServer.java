@@ -30,18 +30,15 @@ public class AppServer {
 
 	private static final Logger logger = Logger.getLogger(AppServer.class.getName());
 	private static int threadPool;
-	private static List<String> hosts;
+	private static String[] hosts;
 	
 
     
 	public static void main(String[] args) throws Exception {
 	
 		
-		if(args.length > 0) {
-			hosts = new ArrayList<>(args.length);
-			for (String host : args) {
-				hosts.add(host);
-			}
+		if(args.length == 1) {
+			hosts = args[0].split(",");
 		}
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 		context.setContextPath("/");
@@ -74,7 +71,7 @@ public class AppServer {
 		threadPool = Integer.valueOf(properties.getProperty("thread.pool"));
 		
 		Set<ProcessTask> tasks = new HashSet<>();
-		if(hosts != null && hosts.size() > 0 ) {
+		if(hosts != null && hosts.length > 0 ) {
 			for (String host : hosts) {
 				setupTasks(tasks, host);
 			}
